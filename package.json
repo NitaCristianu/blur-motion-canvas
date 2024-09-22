@@ -1,5 +1,5 @@
 {
-  "name": "blur-motion-canvas",
+  "name": "animation",
   "private": true,
   "version": "0.0.0",
   "scripts": {
@@ -8,8 +8,9 @@
     "build": "tsc && vite build"
   },
   "dependencies": {
-    "@motion-canvas/core": "^3.17.0",
+    "@lezer/cpp": "^1.1.2",
     "@motion-canvas/2d": "^3.17.1",
+    "@motion-canvas/core": "^3.17.0",
     "@motion-canvas/ffmpeg": "^1.1.0"
   },
   "devDependencies": {

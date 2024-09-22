@@ -1,5 +1,18 @@
 {
   "version": 0,
-  "timeEvents": [],
+  "timeEvents": [
+    {
+      "name": "scale up",
+      "targetTime": 0.4262777400536252
+    },
+    {
+      "name": "drag",
+      "targetTime": 3.23077405454994
+    },
+    {
+      "name": "next",
+      "targetTime": 12.77736567025963
+    }
+  ],
   "seed": 245294605
 }

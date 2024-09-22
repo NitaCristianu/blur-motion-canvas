@@ -1,0 +1,18 @@
+{
+  "version": 0,
+  "timeEvents": [
+    {
+      "name": "appear",
+      "targetTime": 0.4832435472558161
+    },
+    {
+      "name": "code in",
+      "targetTime": 2.764176104113937
+    },
+    {
+      "name": "next",
+      "targetTime": 16.531445558955912
+    }
+  ],
+  "seed": 235055231
+}
