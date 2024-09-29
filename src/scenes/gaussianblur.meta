@@ -1,0 +1,26 @@
+{
+  "version": 0,
+  "timeEvents": [
+    {
+      "name": "start",
+      "targetTime": 0.8500540540540539
+    },
+    {
+      "name": "continue",
+      "targetTime": 5.4143243243243235
+    },
+    {
+      "name": "select pixels",
+      "targetTime": 13.998972972972972
+    },
+    {
+      "name": "move",
+      "targetTime": 19.987097446805688
+    },
+    {
+      "name": "next",
+      "targetTime": 36.60560195131019
+    }
+  ],
+  "seed": 2921915814
+}

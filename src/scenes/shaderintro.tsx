@@ -1,5 +1,5 @@
 import { Circle, CODE, Code, Grid, Img, Line, makeScene2D, Ray, Rect, Txt } from '@motion-canvas/2d';
-import { all, any, chain, createRef, createSignal, DEFAULT, delay, easeOutBack, easeOutCubic, easeOutElastic, linear, loop, PossibleVector2, range, Vector2, waitFor, waitUntil } from '@motion-canvas/core';
+import { all, any, chain, createRef, createSignal, DEFAULT, delay, easeInSine, easeOutBack, easeOutCubic, easeOutElastic, linear, loop, PossibleVector2, range, Vector2, waitFor, waitUntil } from '@motion-canvas/core';
 import { bgr, white } from '../config/colors';
 import mainImgSrc from '../assets/main.png';
 import { Glow } from '../components/glow';
@@ -13,11 +13,12 @@ export default makeScene2D(function* (view) {
     const codeBlock = createRef<Code>();
     const mainImg = createRef<Img>();
     const redOverlay = createRef<Rect>();
+    const actualGrid = createRef<Grid>();
 
     const movingSkew = createSignal(1)
     const inputName = "gl_FragCoord";
     const outputName = "gl_FragColor"
-
+    const uniforms = Code.createSignal(CODE``)
     const innerContent = Code.createSignal(CODE`\
 `)
 
@@ -26,7 +27,7 @@ export default makeScene2D(function* (view) {
 
 in vec4 ${inputName};
 out vec4 ${outputName}; 
-
+${uniforms}
 void main()
 {
 ${innerContent}
@@ -83,6 +84,7 @@ ${innerContent}
                     spacing={grid_spacing}
                     width={'100%'}
                     height={'100%'}
+                    ref={actualGrid}
                 />
             </Rect>
         </Rect>)
@@ -257,13 +259,33 @@ ${innerContent}
         stroke={"#ffffffaa"}
         lineWidth={2}
         opacity={0}
-    />)
+        clip
+    >
+        <Img
+            src={mainImgSrc}
+            size={size}
+            opacity={()=>1-redOverlay().opacity()}
+        />
+    </Rect>)
     yield* all(
         image().opacity(1, 1),
         image().position(center, 1)
     );
 
+    yield* waitUntil("display");
+    yield* all(
+        uniforms(`
+uniforms sampler2D image; // Input Image (texture)
+`, 1),
+        innerContent(`\
+    vec2 uv = gl_FragCoord.xy / gl_Resolution
 
+    gl_FragColor = texture(image, coord)`, 1),
+        redOverlay().opacity(0, 1, easeInSine),
+    )
 
     yield* waitUntil('next');
+    yield* all(
+        view.opacity(0, 1),
+    )
 });

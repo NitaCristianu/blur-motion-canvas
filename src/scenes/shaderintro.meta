@@ -26,8 +26,12 @@
       "targetTime": 19.375498178131757
     },
     {
+      "name": "display",
+      "targetTime": 21.939688097915763
+    },
+    {
       "name": "next",
-      "targetTime": 22.292202980158503
+      "targetTime": 23.682604810442303
     }
   ],
   "seed": 235055231

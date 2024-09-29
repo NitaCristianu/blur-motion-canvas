@@ -1,0 +1,26 @@
+{
+  "version": 0,
+  "timeEvents": [
+    {
+      "name": "start",
+      "targetTime": 0.7464352796261036
+    },
+    {
+      "name": "code",
+      "targetTime": 2.9402500443443174
+    },
+    {
+      "name": "offset",
+      "targetTime": 5.021731644295395
+    },
+    {
+      "name": "finalcode",
+      "targetTime": 7.395076968255371
+    },
+    {
+      "name": "next",
+      "targetTime": 15.325264299141487
+    }
+  ],
+  "seed": 2222412844
+}

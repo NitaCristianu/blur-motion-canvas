@@ -1,0 +1,34 @@
+{
+  "version": 0,
+  "timeEvents": [
+    {
+      "name": "start",
+      "targetTime": 1.0989300518704244
+    },
+    {
+      "name": "center",
+      "targetTime": 3.0563746986649876
+    },
+    {
+      "name": "contribution",
+      "targetTime": 6.056374698664987
+    },
+    {
+      "name": "distribute",
+      "targetTime": 7.056374698664987
+    },
+    {
+      "name": "reverse",
+      "targetTime": 13.444657927227004
+    },
+    {
+      "name": "tweak",
+      "targetTime": 18.388346460561056
+    },
+    {
+      "name": "next",
+      "targetTime": 29.610052106992494
+    }
+  ],
+  "seed": 1465243211
+}
