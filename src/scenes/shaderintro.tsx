@@ -1,5 +1,5 @@
-import { Circle, CODE, Code, Grid, Img, Line, makeScene2D, Ray, Rect, Txt } from '@motion-canvas/2d';
-import { all, any, chain, createRef, createSignal, DEFAULT, delay, easeInSine, easeOutBack, easeOutCubic, easeOutElastic, linear, loop, PossibleVector2, range, Vector2, waitFor, waitUntil } from '@motion-canvas/core';
+import { Circle, CODE, Code, Grid, Img, Line, lines, makeScene2D, Ray, Rect, Txt } from '@motion-canvas/2d';
+import { all, any, chain, Color, createRef, createSignal, DEFAULT, delay, easeInBack, easeInOutCubic, easeInSine, easeOutBack, easeOutCubic, easeOutElastic, linear, loop, PossibleVector2, range, textLerp, Vector2, waitFor, waitUntil } from '@motion-canvas/core';
 import { bgr, white } from '../config/colors';
 import mainImgSrc from '../assets/main.png';
 import { Glow } from '../components/glow';
@@ -15,6 +15,7 @@ export default makeScene2D(function* (view) {
     const redOverlay = createRef<Rect>();
     const actualGrid = createRef<Grid>();
 
+    const samplepixel = createSignal(new Vector2(0, 0));
     const movingSkew = createSignal(1)
     const inputName = "gl_FragCoord";
     const outputName = "gl_FragColor"
@@ -264,9 +265,104 @@ ${innerContent}
         <Img
             src={mainImgSrc}
             size={size}
-            opacity={()=>1-redOverlay().opacity()}
+            opacity={() => 1 - redOverlay().opacity()}
         />
     </Rect>)
+    const samplecircle = createRef<Circle>();
+    view.add(
+        <Circle
+            position={() => samplepixel().mul(image().size().sub(20)).sub(image().size().div(2).sub(10)).add(image().position())}
+            fill={() => {
+                var pos = new Vector2(samplepixel());
+                pos.y = 1 - pos.y;
+                pos = pos.mul(255);
+                pos.x = Math.round(pos.x)
+                pos.y = Math.round(pos.y)
+
+                const color = new Color(`rgb(${pos.x}, ${pos.y}, 255)`).saturate(3);
+                return color;
+            }}
+            size={20}
+            shadowBlur={10}
+            shadowColor={() => samplecircle().fill() as Color}
+            justifyContent={'center'}
+            alignItems={'center'}
+            opacity={0}
+
+            scale={0.3}
+            ref={samplecircle}
+        >
+            <Circle
+                size={20}
+                scale={1.4}
+                stroke={() => (samplecircle().fill() as Color).brighten(2)}
+                lineWidth={2}
+            />
+            <Txt
+                fontFamily={"Fira Code"}
+                fill={() => samplecircle().fill()}
+                fontSize={30}
+                shadowColor={() => (samplecircle().fill() as Color).darken(4)}
+                shadowBlur={10}
+                y={50}
+                text={() => `(${samplepixel().x.toFixed(2)}, ${(1 - samplepixel().y).toFixed(2)})`}
+            />
+        </Circle>
+    )
+
+    const transition = createSignal(0);
+    view.add(<Rect
+        bottomLeft={() => image().bottomLeft().add([50, -50])}
+    >
+        <Ray
+            toY={-200}
+            stroke={"rgb(185, 255, 157)"}
+            end={transition}
+            lineDash={[4, 4]}
+            lineWidth={5}
+            shadowBlur={10}
+            endArrow
+            arrowSize={10}
+            shadowColor={"rgb(185, 255, 157)"}
+        >
+            <Txt
+                opacity={()=>transition()}
+                text={"v"}
+                fontFamily={"Fira Code"}
+                fill={"rgb(185, 255, 157)"}
+                fontWeight={600}
+                y={-230}
+            />
+        </Ray>
+        <Ray
+            toX={200}
+            stroke={"rgb(255, 157, 157)"}
+            end={transition}
+            lineDash={[4, 4]}
+            lineWidth={5}
+            shadowBlur={10}
+            endArrow
+            arrowSize={10}
+            shadowColor={"rgb(255, 157, 157)"}
+        >
+            <Txt
+                opacity={()=>transition()}
+                text={"u"}
+                fontFamily={"Fira Code"}
+                fill={"rgb(255, 157, 157)"}
+                fontWeight={600}
+                x={230}
+            />
+        </Ray>
+        <Circle
+            fill={"#ffffffff"}
+            size={20}
+            scale={transition}
+            shadowBlur={10}
+            shadowColor={"#ffffff9a"}
+        />
+    </Rect>)
+
     yield* all(
         image().opacity(1, 1),
         image().position(center, 1)
@@ -278,13 +374,35 @@ ${innerContent}
 uniforms sampler2D image; // Input Image (texture)
 `, 1),
         innerContent(`\
-    vec2 uv = gl_FragCoord.xy / gl_Resolution
+    vec2 uv = gl_FragCoord.xy / gl_Resolution;
 
-    gl_FragColor = texture(image, coord)`, 1),
+    gl_FragColor = texture(image, uv)`, 1),
         redOverlay().opacity(0, 1, easeInSine),
     )
 
+    yield* waitUntil("UV");
+    yield codeBlock().selection(lines(9), 1);
+    yield* waitUntil("Point");
+    yield chain(
+        all(
+            samplecircle().opacity(1, .6, easeOutBack),
+            samplecircle().scale(1, .6, easeOutBack),
+            transition(1, .6, easeOutBack),
+        ),
+        samplepixel(new Vector2(.7, .2), 1.5),
+        samplepixel(new Vector2(.3, .6), 1.5),
+        samplepixel(new Vector2(.4, .9), 1.5),
+        samplepixel(new Vector2(.9, .9), 1.5),
+        samplepixel(new Vector2(.5, .5), 1.5),
+        all(
+            samplecircle().opacity(0, 1, easeInBack),
+            samplecircle().scale(0, 1, easeInBack),
+            transition(0, 1, easeInBack)
+        ),
+    )
+
     yield* waitUntil('next');
+
     yield* all(
         view.opacity(0, 1),
     )

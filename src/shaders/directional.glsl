@@ -27,7 +27,7 @@ void main() {
     
     float a = samples * 3.;
     for (float i = 0.; i <= a; i++) {
-        vec2 dir = direction * strength / 100.;
+        vec2 dir = normalize(direction) * strength;
         color += texture(sourceTexture, sourceUV + float(i) * dir / resolution - dir/10.);
         total += 1.0;
     }

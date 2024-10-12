@@ -17,25 +17,34 @@ uniform sampler2D destinationTexture;
 uniform mat4 sourceMatrix;
 uniform mat4 destinationMatrix;
 
-uniform float strength;
+uniform float strength;  // Control the spread of the Gaussian
+uniform float samples;   // Total number of samples
 
-float clamp01(float x) {
-    return clamp(x, 0.0, 1.0);
+float gaussian(float x, float y, float sigma) {
+    vec2 i = vec2(x, y);
+    return exp(-0.5 * dot(i /= sigma, i)) / (6.283185307179586 * sigma * sigma);  // Use PI constant for better precision
 }
 
 void main() {
     vec4 color = vec4(0.0);  
     float total = 0.0;
     
-    float a = strength * 3.;
-    for (float i = -a; i <= a; i++) {
-        for (float j = -a; j <= a; j++) {
-            vec2 offset = vec2(i, j) / resolution;
-            float val = -length(offset - sourceUV);
-            color += texture(sourceTexture, sourceUV + offset) * val;
-            total += val;
+    // Calculate the number of samples per dimension
+    int grid_side = int(sqrt(samples)); // Use total samples directly
+    float scale = float(grid_side) / resolution.x; // Normalize by resolution
+    
+    for (int i = -grid_side/2; i < grid_side/2; i++) {
+        for (int j = -grid_side/2; j < grid_side/2; j++) {
+            vec2 offset = vec2(float(i), float(j)) * scale;  // Offset based on grid and resolution
+            float val = gaussian(float(i), float(j), strength);  // Gaussian weight
+            color += texture(sourceTexture, sourceUV + offset) * val;  // Sample the texture
+            total += val;  // Accumulate total weight
         }
     }
     
-    outColor = color / total;
+    if (total > 0.0) {
+        outColor = color / total;  // Normalize the color by total weight
+    } else {
+        outColor = texture(sourceTexture, sourceUV);  // Fallback to black if no samples are accumulated
+    }
 }

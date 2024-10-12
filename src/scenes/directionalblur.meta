@@ -1,0 +1,38 @@
+{
+  "version": 0,
+  "timeEvents": [
+    {
+      "name": "start",
+      "targetTime": 2.389556526909232
+    },
+    {
+      "name": "zoom",
+      "targetTime": 28.77073900390023
+    },
+    {
+      "name": "setpoint",
+      "targetTime": 35.77073900390023
+    },
+    {
+      "name": "arrows",
+      "targetTime": 41.38032092844265
+    },
+    {
+      "name": "showdata",
+      "targetTime": 47.354363396551015
+    },
+    {
+      "name": "code",
+      "targetTime": 60.64309266404503
+    },
+    {
+      "name": "remv",
+      "targetTime": 74.19262149438397
+    },
+    {
+      "name": "next",
+      "targetTime": 82.01139422235168
+    }
+  ],
+  "seed": 2292100137
+}

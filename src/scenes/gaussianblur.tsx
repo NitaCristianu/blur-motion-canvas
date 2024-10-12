@@ -1,13 +1,17 @@
-import { Circle, Grid, Img, makeScene2D, Rect, Txt } from '@motion-canvas/2d';
-import { all, chain, createEffect, createRef, createSignal, delay, easeOutBack, linear, PossibleVector2, Reference, Signal, spawn, Vector2, waitFor, waitUntil } from '@motion-canvas/core';
+import { Circle, CODE, Code, Gradient, Grid, Img, makeScene2D, Ray, Rect, signal, Txt, Video } from '@motion-canvas/2d';
+import { all, any, chain, Color, createEffect, createRef, createRefArray, createSignal, delay, easeInCirc, easeInOutCirc, easeOutBack, easeOutCirc, easeOutCubic, linear, PossibleVector2, range, Reference, Signal, spawn, useLogger, Vector2, waitFor, waitUntil } from '@motion-canvas/core';
 
 import directional from "../shaders/directional.glsl";
 import gaussian from "../shaders/gaussian.glsl";
 import radial from "../shaders/radial.glsl";
+import removeblack from "../shaders/removeblack.glsl";
 
+import gaussianblurvideo from '../assets/cube.mp4';
 import mainimgsrc from "../assets/main.png";
 import { Glow } from '../components/glow';
-import { bgr } from '../config/colors';
+import { bgr, white } from '../config/colors';
+
+import blur from "../shaders/blur.glsl";
 
 interface shaderdata {
     name: string;
@@ -38,14 +42,14 @@ export default makeScene2D(function* (view) {
         />
     )
 
-    const gaussianstrength = createSignal(20.4);
+    const gaussianstrength = createSignal(3);
     const container = createRef<Rect>();
     const shaders: shaderdata[] = [
         {
             name: 'gaussian',
             shader: {
                 fragment: gaussian,
-                uniforms: { strength: gaussianstrength }
+                uniforms: { strength: gaussianstrength, samples: 250 }
             },
             ref: createRef<Rect>(),
         },
@@ -53,7 +57,7 @@ export default makeScene2D(function* (view) {
             name: 'directional',
             shader: {
                 fragment: directional,
-                uniforms: { strength: 2, direction: new Vector2(40, 40), samples: 100 }
+                uniforms: { strength: .6, direction: new Vector2(1, 1), samples: 100 }
             },
             ref: createRef<Rect>(),
         },
@@ -161,11 +165,11 @@ export default makeScene2D(function* (view) {
 
         ),
         all(
-            delay(1.5,all(
+            delay(1.5, all(
                 grid().opacity(0.6, 1),
                 grid().spacing(120, 4),
                 grid().position([540, -1380], 5),
-        )),
+            )),
             shaders[0].ref().scale(345, 7),
             container().position([-500, 1400], 3),
         )
@@ -173,28 +177,76 @@ export default makeScene2D(function* (view) {
 
     const circles: Circle[] = [];
     const circlecount = createSignal(0);
+    const text = createRef<Txt>();
 
-    const unsubscribe = createEffect(()=>{
+    view.add(<Txt
+        ref={text}
+        fontFamily={"Poppins"}
+        fontWeight={700}
+        fontSize={40}
+        fill={"white"}
+        x={400}
+    />)
+
+    const unsubscribe = createEffect(() => {
         const count = Math.round(circlecount());
 
         let i = circles.length;
-        for (; i < count; i++){
+        for (; i < count; i++) {
             const circle = (<Circle
-                fill = {"rgba(247, 231, 88, 0.11)"}
-                stroke = {"rgba(247, 231, 88, 1)"}
+                fill={"rgba(247, 231, 88, 0.11)"}
+                stroke={"rgba(247, 231, 88, 1)"}
                 lineWidth={1}
                 position={pixel().position}
+                scale={pixel().scale}
             />) as Circle;
             circles.push(circle);
             view.add(circle);
             spawn(circle.size(360 + 240 * i, 1));
         }
 
-        for (; i > count; i--){
+        for (; i > count; i--) {
             const circle = circles.pop()!;
-            spawn(circle.size(0, 0.4).do(()=>circle.remove()))
+            spawn(circle.size(0, 0.4).do(() => circle.remove()))
         }
     });
+
+    const info = createRef<Rect>();
+    const weightColor = createSignal(new Color("rgb(247, 231, 88)"));
+    view.add(<Rect
+        layout
+        x={pixel().x}
+        ref={info}
+        y={1000}
+        width={600}
+        scale={0.5}
+        opacity={0}
+        justifyContent={'center'}
+        alignContent={'center'}
+        gap={20}
+    >
+        <Txt
+            text={"WEIGHT"}
+            fontFamily={"Poppins"}
+            fontSize={40}
+            fill={"white"}
+            fontWeight={200}
+        />
+        <Rect
+            width={'100%'}
+            radius={16}
+            stroke={'white'}
+            lineWidth={2}
+            fill={() => new Gradient({
+                fromX: -300,
+                toX: 300,
+                stops: [
+                    { color: `rgba(${weightColor().rgb()[0]}, ${weightColor().rgb()[1]}, ${weightColor().rgb()[2]}, 0.11)`, offset: 0 },
+                    { color: `rgba(${weightColor().rgb()[0]}, ${weightColor().rgb()[1]}, ${weightColor().rgb()[2]}, 0.81)`, offset: 1 },
+                ]
+            })}
+        />
+    </Rect>)
 
     yield* chain(
         waitUntil("select pixels"),
@@ -202,16 +254,217 @@ export default makeScene2D(function* (view) {
             pixel().scale(1, .6, linear),
         ),
         waitFor(0.5),
-        circlecount(3, 3),
+        any(
+            pixel().x(pixel().x() - 480, 1),
+            grid().x(grid().x() - 480, 1),
+            shaders[0].ref().x(shaders[0].ref().x() - 480, 1),
+            circlecount(3, 2),
+        ),
+        all(
+            info().y(180 + 240 + 50, 1, easeOutCubic),
+            info().scale(1, 1, easeOutCubic),
+            info().opacity(1, 1, easeOutCubic),
+        ),
+        text().text(`\
+    The further a cell is from the center,
+    the less weight it has,
+    thus the ones closer to
+    center affect the image more`, 2)
+    )
+    yield* chain(
+        waitUntil("gridsize scale"),
+        all(
+            pixel().scale(0.3, 1, easeInOutCirc),
+            circlecount(10, 3, linear),
+        ),
+    )
+
+    const videoref = createRef<Video>();
+    const actualvideorref = createRef<Video>();
+    view.add(
+        <Rect
+            ref={videoref}
+            radius={32}
+            clip
+            stroke={'#ffffff5a'}
+            lineWidth={3}
+            y={-1200}
+            size={800}
+            fill={"#00000040"}
+        >
+            <Video
+                src={gaussianblurvideo}
+                x={-20}
+                scale={.35}
+                shaders={{ fragment: removeblack }}
+                loop
+                shadowBlur={200}
+                ref={actualvideorref}
+                shadowColor={"rgba(158, 45, 228, 0.7)"}
+                zIndex={2}
+            />
+            <Rect
+                size={800}
+                radius={32}
+                shaders={{ fragment: blur }}
+            />
+            <Txt
+                zIndex={3}
+                text={"Gaussian Distribution Plot"}
+                fontFamily={"Poppins"}
+                fontWeight={700}
+                y={-340}
+                fill={white}
+                shadowColor={"#ffffffa0"}
+                shadowBlur={20}
+            />
+        </Rect>
+    );
+    yield actualvideorref().play();
+
+    yield* chain(
+        waitUntil("slide"),
+        all(
+            text().y(1200, 2),
+            pixel().y(1200, 2),
+            grid().y(grid().y() + 1200, 2),
+            videoref().y(0, 2),
+            weightColor(new Color("rgb(110, 76, 190)"), 1),
+            info().x(videoref().x, 1)
+        ),
+    );
+
+
+    const codeCard = createRef<Code>();
+    const code = CODE`\
+...
+uniform float strength;  // Control the spread of the Gaussian
+uniform float samples;   // Total number of samples
+
+// gaussian distribution
+float gaussian(float x, float y, float sigma) {
+    vec2 i = vec2(x, y);
+    float g = exp(-0.5 * dot(i /= sigma, i));
+    // 6.2831... is pi * 2
+    return g / (6.283185307179586 * sigma * sigma); 
+}
+
+
+void main() {
+    vec2 uv = gl_FragCoord.xy / gl_Resolution.xy;
+    vec4 color = vec4(0.0);  
+    // This will keep track of the total weight
+    // for normalizing the final color
+    float total = 0.0;
+    // calculate grid side (square grid)
+    int grid_side = int(sqrt(samples));
+
+    for (int i = -grid_side/2; i <= grid_side/2; i++) {
+        for (int j = -grid_side/2; j <= grid_side/2; j++) {
+            vec2 offset = vec2(float(i), float(j)) / gl_Resolution;
+            // Gaussian weight
+            float weight = gaussian(float(i), float(j), strength);
+            // sample the texture
+            color += texture(image, uv + offset) * weight;
+            total += weight;  // Accumulate total weight
+        }
+    }
+
+    // Normalize the final color by dividing
+    // it by the total weight
+    gl_FragColor = color / total;
+}
+    `;
+
+    view.add(<Rect
+        fill={"rgba(40, 3, 41, 0.5)"}
+        layout
+        direction={'column'}
+        x={950}
+        padding={32}
+        radius={32}
+        gap={16}
+        minWidth={600}
+        minHeight={200}
+        stroke={"#ffffff66"}
+        lineWidth={0.5}
+        zIndex={2}
+        opacity={0}
+        scale={0.7}
+        ref={codeCard}
+    >
+        <Rect
+            layout
+            direction={'row'}
+            justifyContent={'space-between'}
+            alignItems={'center'}
+        >
+            <Txt
+                fontFamily={"Poppins"}
+                text={"gaussianblur.glsl"}
+                fill={white}
+                fontSize={30}
+                fontWeight={500}
+            />
+            <Rect
+                layout
+                gap={16}
+
+            >
+                {range(3).map(() => (<Circle
+                    size={20}
+                    stroke={'white'}
+                    lineWidth={1.7}
+
+                />))}
+            </Rect>
+        </Rect>
+        <Code
+            code={code}
+            fontSize={20}
+        />
+    </Rect>);
+    view.add(<Rect
+        position={codeCard().position}
+        size={codeCard().size}
+        zIndex={1}
+        opacity={codeCard().opacity}
+        scale={codeCard().scale}
+        shaders={{
+            fragment: blur,
+        }}
+    />)
+
+    yield* chain(
+        waitUntil('video'),
+        all(
+            grid().x(grid().x() - 500, 1),
+            codeCard().x(450, 1),
+            codeCard().opacity(1, 1),
+            videoref().x(-480, 1),
+            codeCard().scale(1, 1),
+        )
     )
 
     yield* chain(
-        waitUntil("move"),
+        waitUntil("goback"),
         all(
-            pixel().x(pixel().x()-480, 1),
-            grid().x(grid().x()-480, 1),
-            shaders[0].ref().x(shaders[0].ref().x()-480, 1),
-        ),
+            info().opacity(0, 2),
+            info().scale(0, 3),
+            info().position([0, 0], 4),
+            gaussianstrength(10, 1),
+            shaders[0].ref().scale(1, 4),
+            container().position([0, 0], 4),
+            videoref().scale(0, 3),
+            videoref().position([-30, 0], 3),
+            codeCard().scale(0, 3),
+            codeCard().position([-30, 0], 3),
+            delay(1, all(
+                grid().opacity(0, 3),
+                grid().spacing(0, 4),
+                grid().position([0, 0], 5),
+            ))
+        )
     )
 
     yield* waitUntil('next');

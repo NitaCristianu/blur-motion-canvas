@@ -27,9 +27,7 @@ void main() {
     vec4 color = vec4(0.0);  
     float total = 0.0;
     
-    vec4 initial = texture(sourceTexture, sourceUV);
-    
-    float a = strength * 3.;
+    float a = strength/2.;
     for (float i = -a; i <= a; i++) {
         for (float j = -a; j <= a; j++) {
             vec2 offset = vec2(i, j) / resolution;

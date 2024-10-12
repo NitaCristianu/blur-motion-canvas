@@ -7,12 +7,22 @@ import shaderintro from './scenes/shaderintro?scene';
 import boxblur from './scenes/boxblur?scene';
 import convolution from './scenes/convolution?scene';
 import gaussianblur from './scenes/gaussianblur?scene';
+import directionalblur from './scenes/directionalblur?scene';
+import radialblur from './scenes/radialblur?scene';
+
+import audio from './assets/audio/radial.wav';
 
 Code.defaultHighlighter = new LezerHighlighter(parser);
 
 export default makeProject({
   scenes: [
-    gaussianblur
+    // shaderintro,
+    // boxblur,
+    // convolution,
+    // gaussianblur,
+    // directionalblur,
+    radialblur,
   ],
-  experimentalFeatures: true
+  experimentalFeatures: true,
+  audio:audio,
 });

@@ -19,8 +19,6 @@ uniform sampler2D destinationTexture;
 uniform mat4 sourceMatrix;
 uniform mat4 destinationMatrix;
 
-uniform float strenght;
-
 // 16x acceleration of https://www.shadertoy.com/view/4tSyzy
 // by applying gaussian at intermediate MIPmap level.
 

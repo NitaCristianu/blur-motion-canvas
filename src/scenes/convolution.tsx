@@ -1,5 +1,5 @@
-import { Circle, Img, Latex, makeScene2D, Rect, Txt } from '@motion-canvas/2d';
-import { all, chain, Color, createRef, createRefArray, createSignal, delay, easeOutBack, easeOutCubic, range, tween, useRandom, waitFor, waitUntil } from '@motion-canvas/core';
+import { Circle, Img, Latex, makeScene2D, Ray, Rect, Txt } from '@motion-canvas/2d';
+import { all, chain, Color, createRef, createRefArray, createSignal, delay, easeInBack, easeOutBack, easeOutCubic, range, tween, useRandom, waitFor, waitUntil } from '@motion-canvas/core';
 import mainimgsrc from "../assets/main.png";
 import { Glow } from '../components/glow';
 import { bgr } from '../config/colors';
@@ -9,16 +9,17 @@ import convoluteshader from "../shaders/convolution.glsl";
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
 export default makeScene2D(function* (view) {
-    const darkbgr = bgr.brighten(-.3);
-    view.fill(darkbgr)
+    view.fill(bgr)
 
-    view.add(<Glow
-        color1={bgr}
-        color2={bgr.lerp('yellow', 0.4)}
-        color3={bgr.lerp("blue", 0.2)}
-        color4={bgr.lerp('brown', 0.1)}
-        opacity={0.6}
-    />)
+    view.add(
+        <Glow
+            color1={bgr.saturate(1.2)}
+            color2={bgr.saturate(1.2).brighten(2)}
+            color3={bgr.saturate(1.2).lerp("aa1111", .73)}
+            color4={bgr.saturate(1.2).lerp("blue", .73)}
+            size={'200%'}
+        />
+    )
 
     const showline = createSignal(0);
     const showcenter = createSignal(0);
@@ -52,7 +53,7 @@ export default makeScene2D(function* (view) {
 
     view.add(<Latex
         tex={"="}
-        y={50}
+        y={150}
         height={50}
         fill={"white"}
         opacity={averagetextopacity}
@@ -60,7 +61,7 @@ export default makeScene2D(function* (view) {
 
     view.add(<Latex
         tex={"final\\;color"}
-        y={200}
+        y={300}
         height={90}
         fill={"white"}
         opacity={averagetextopacity}
@@ -73,7 +74,6 @@ export default makeScene2D(function* (view) {
         stroke={() => new Color("white").alpha(1 - borderroundness() / 32)}
         ref={container}
         lineWidth={2}
-        y={() => liney(0)}
         clip
     >
         {range(cellrow * cellrow).map(i => (
@@ -104,6 +104,51 @@ export default makeScene2D(function* (view) {
         showcenter(1, 1),
         waitFor(1),
         showcenter(0, 1),
+    )
+
+    const rays = createRefArray<Ray>();
+    view.add(<>
+        {range(cellrow * cellrow).map(i => (
+            <Ray
+                size={() => i == 4 && showcenter() > 0 ? cellsize() + cellsize() * showcenter() * 0.2 : cellsize()}
+                stroke={"rgb(233, 215, 250)"}
+                shadowColor={"rgb(233, 215, 250)"}
+                shadowBlur={10}
+                lineWidth={3}
+                scale={0.4}
+                endArrow
+                arrowSize={15}
+                end={0}
+                opacity={0}
+                ref={rays}
+                x={() => lerp(gridx(i), linex(i), showline())}
+                y={() => lerp(gridy(i), 0, showline())}
+                toX={() => -lerp(gridx(i), linex(i), showline())}
+                toY={() => -lerp(gridy(i), 0, showline())}
+            >
+                <Circle
+                    fill={"rgb(233, 215, 250)"}
+                    shadowColor={"rgb(233, 215, 250)"}
+                    shadowBlur={10}
+                    size={10}
+                />
+            </Ray>
+        ))}
+    </>)
+
+    yield* chain(
+        waitUntil("receive"),
+        all(
+            ...rays.map(ray => ray.end(0.5, 1, easeOutBack)),
+            ...rays.map(ray => ray.opacity(1, 1, easeOutBack)),
+            ...rays.map(ray => ray.scale(1, 1, easeOutBack)),
+        ),
+        waitUntil("delete"),
+        all(
+            ...rays.map(ray => ray.end(0, 1, easeInBack)),
+            ...rays.map(ray => ray.opacity(0, 1, easeInBack)),
+            ...rays.map(ray => ray.scale(0, 1, easeInBack)),
+        ),
     )
 
     yield* chain(
@@ -209,9 +254,6 @@ export default makeScene2D(function* (view) {
             ...values.map((val, i) => tween(1, t => values[i] = lerp(val, newvals[i], t))),
         ),
     )
-
-
-
 
     yield* waitUntil("next");
 

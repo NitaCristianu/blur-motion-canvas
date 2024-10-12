@@ -3,23 +3,47 @@
   "timeEvents": [
     {
       "name": "start",
-      "targetTime": 0.7464352796261036
+      "targetTime": 1.0694237552133439
     },
     {
-      "name": "code",
-      "targetTime": 2.9402500443443174
+      "name": "pixel center",
+      "targetTime": 3.258149232173319
+    },
+    {
+      "name": "code in",
+      "targetTime": 10.59840330192957
+    },
+    {
+      "name": "cover",
+      "targetTime": 15.284370311863013
+    },
+    {
+      "name": "show relatives",
+      "targetTime": 26.7811167133135
+    },
+    {
+      "name": "offsetline",
+      "targetTime": 29.38654770211709
     },
     {
       "name": "offset",
-      "targetTime": 5.021731644295395
+      "targetTime": 35.133265922683236
+    },
+    {
+      "name": "devided",
+      "targetTime": 38.40088700962337
     },
     {
       "name": "finalcode",
-      "targetTime": 7.395076968255371
+      "targetTime": 54.51243411335848
+    },
+    {
+      "name": "slider",
+      "targetTime": 61.62823793871452
     },
     {
       "name": "next",
-      "targetTime": 15.325264299141487
+      "targetTime": 69.23792499039563
     }
   ],
   "seed": 2222412844

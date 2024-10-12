@@ -3,23 +3,35 @@
   "timeEvents": [
     {
       "name": "start",
-      "targetTime": 0.8500540540540539
+      "targetTime": 3.240123556126604
     },
     {
       "name": "continue",
-      "targetTime": 5.4143243243243235
+      "targetTime": 10.8546003372686
     },
     {
       "name": "select pixels",
-      "targetTime": 13.998972972972972
+      "targetTime": 18.8546003372686
     },
     {
-      "name": "move",
-      "targetTime": 19.987097446805688
+      "name": "gridsize scale",
+      "targetTime": 30.874745762817
+    },
+    {
+      "name": "slide",
+      "targetTime": 43.91316105010373
+    },
+    {
+      "name": "video",
+      "targetTime": 47.57683172733043
+    },
+    {
+      "name": "goback",
+      "targetTime": 56.33708601271741
     },
     {
       "name": "next",
-      "targetTime": 36.60560195131019
+      "targetTime": 72.06838910546428
     }
   ],
   "seed": 2921915814

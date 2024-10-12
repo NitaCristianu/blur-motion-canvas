@@ -17,7 +17,7 @@
     "resolutionScale": 1
   },
   "rendering": {
-    "fps": 25,
+    "fps": 60,
     "resolutionScale": 1,
     "colorSpace": "srgb",
     "exporter": {
